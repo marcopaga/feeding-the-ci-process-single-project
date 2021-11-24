@@ -1,0 +1,27 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      
+      - name: Login to GitHub Container Registry
+        run: echo $CR_PAT | docker login ghcr.io -u marcopaga --password-stdin
+        env:
+          CR_PAT: ${{ secrets.CR_PAT }}
+      
+      - name: Install pack CLI via the official buildpack Action https://github.com/buildpacks/github-actions#setup-pack-cli-action
+        uses: buildpacks/github-actions/setup-pack@v4.4.2
+
+      - name: Build app with pack CLI using Buildpack Cache image (see https://buildpacks.io/docs/app-developer-guide/using-cache-image/) & publish to Docker Hub
+        run: |
+          pack build ghcr.io/marcopaga/feeding-the-ci-process-single-project:latest \
+              --builder paketobuildpacks/builder:base \
+              --path . \
