@@ -4,24 +4,32 @@ name: CI
 
 on: [push]
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
 
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-      
-      - name: Login to GitHub Container Registry
-        run: echo $CR_PAT | docker login ghcr.io -u marcopaga --password-stdin
-        env:
-          CR_PAT: ${{ secrets.CR_PAT }}
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Install pack CLI via the official buildpack Action https://github.com/buildpacks/github-actions#setup-pack-cli-action
         uses: buildpacks/github-actions/setup-pack@v4.4.2
 
       - name: Build app with pack CLI using Buildpack Cache image (see https://buildpacks.io/docs/app-developer-guide/using-cache-image/) & publish to Docker Hub
         run: |
-          pack build ghcr.io/marcopaga/feeding-the-ci-process-single-project:latest \
+          pack build ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
               --builder paketobuildpacks/builder:base \
               --path . \
