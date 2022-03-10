@@ -28,9 +28,13 @@ jobs:
       - name: Install pack CLI via the official buildpack Action https://github.com/buildpacks/github-actions#setup-pack-cli-action
         uses: buildpacks/github-actions/setup-pack@v4.4.2
 
+      - name: Set outputs
+        id: vars
+        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+
       - name: Build app with pack CLI using Buildpack Cache image (see https://buildpacks.io/docs/app-developer-guide/using-cache-image/) & publish to Docker Hub
         run: |
-          pack build ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
+          pack build ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{steps.vars.outputs.sha_short}} \
               --builder paketobuildpacks/builder:base \
               --path . \
               --publish
