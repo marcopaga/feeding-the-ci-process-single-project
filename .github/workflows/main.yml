@@ -33,3 +33,4 @@ jobs:
           pack build ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
               --builder paketobuildpacks/builder:base \
               --path . \
+              --publish
